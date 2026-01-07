@@ -15,7 +15,9 @@ When working on complex features, it’s easy to lose track of exactly what has 
 
 3. **Command Familiarity**: Use the actual Git terms I already know (`add` and `checkout`) instead of a proprietary menu system.
 
-4. **TTY-Awareness**: Handle input through /dev/tty so the script can be used safely within pipes or as a sub-command for other scripts.
+4. **POSIX Compliant & Dependency-Free:** Written in pure POSIX `sh`, this script runs on virtually any Unix-like system (Linux, macOS, WSL, BSD) without requiring Python, Perl, or compiled binaries.
+
+5. **TTY-Awareness**: Handle input through /dev/tty so the script can be used safely within pipes or as a sub-command for other scripts.
 
 This script acts as a final sanity check, ensuring that every line of code in the commit is there on purpose.
 

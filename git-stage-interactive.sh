@@ -1,13 +1,19 @@
 #!/bin/sh
 
 if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-    echo "Error: Not a git repository."
+    printf "Error: Not a git repository.\n"
     exit 42
 fi
 
-git status --porcelain=v1 | while IFS= read -r line; do
-    status=$(echo "$line" | cut -c 1-2)
-    file=$(echo "$line" | cut -c 4-)
+status_output=$(git status --porcelain=v1)
+
+while IFS= read -r line; do
+    if [ -z "$line" ]; then
+        continue
+    fi
+
+    file="${line#???}"
+    status="${line% $file}"
 
     case "$file" in 
         *" -> "*)
@@ -15,24 +21,26 @@ git status --porcelain=v1 | while IFS= read -r line; do
             ;;
     esac
 
-    worktree_status=$(echo "$status" | cut -c 2)
-    if [ "$worktree_status" = " " ]; then
+    file="${file#\"}"
+    file="${file%\"}"
+
+    if [ "${status#?}" = " " ]; then
         continue
     fi
 
     case "$status" in
         *U*|AA|DD)
-            echo "!!! CONFLICT ($status): $file (Skipping)"
+            printf "!!! CONFLICT (%s): %s (Skipping)\n" "$status" "$file"
             continue
             ;;
         "??")
-            echo "NEW FILE: $file"
+            printf "NEW FILE: %s\n" "$file"
             ;;
         ?D)
-            echo "DELETED: $file"
+            printf "DELETED: %s\n" "$file"
             ;;
         *)
-            echo "REVIEWING: $file (Status: $status)"
+            printf "REVIEWING: %s (Status: %s)\n" "$file" "$status"
             git diff "$file"
             ;;
     esac
@@ -43,40 +51,43 @@ git status --porcelain=v1 | while IFS= read -r line; do
         case "$action" in
             [Aa]*) 
                 git add "$file"
-                echo "Staged."
+                printf "Staged.\n"
                 break
                 ;;
             [Cc]*)
                 if [ "$status" = "??" ]; then
-                    echo "Cannot 'checkout' an untracked file. Use 'rm' manually if needed."
+                    printf "Cannot 'checkout' an untracked file. Use 'rm' manually if needed.\n"
                 else
                     printf "WARNING: Permanently discard changes via 'git checkout -- %s'? (y/n): " "$file"
                     read -r confirm < /dev/tty
                     if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
                         git checkout -- "$file"
-                        echo "Executed: git checkout -- $file"
+                        printf "Executed: git checkout -- %s\n" "$file"
                         break
                     else
-                        echo "Command cancelled."
+                        printf "Command cancelled.\n"
                     fi
                 fi
                 ;;
             [Ss]*) 
-                echo "Skipped."
+                printf "Skipped.\n"
                 break
                 ;;
             [Qq]*)
-                echo "Aborting review."
+                printf "Aborting review.\n"
                 exit 1
                 ;;
             *) 
-                echo "Please enter 'a' to add, 'c' to checkout (restore), 's' to skip, or 'q' to quit."
+                printf "Please enter 'a' to add, 'c' to checkout (restore), 's' to skip, or 'q' to quit.\n"
                 ;;
         esac
     done
-done
+done <<EOF
+$status_output
+EOF
 
-echo "----------------------------"
-echo "Review session complete. Current Status:"
+printf "Review session complete.\n"
+printf "----------------------------\n"
+printf "Current Status:\n"
 git status
 exit 0
