@@ -78,7 +78,7 @@ git si
 |a|add|Runs git add on the current file.|
 |c|checkout|Runs git checkout -- to discard unstaged changes (requires confirmation).|
 |s|skip|Leaves the file as-is and moves to the next change.|
-|q|quit|Immediately ends the session and shows a final status.  ⚠️ This will **NOT** reset any actions taken before quitting.|
+|q|quit|Immediately ends the session and shows a final status.<br>⚠️ This will **NOT** reset any actions taken before quitting.|
 
 ### Advanced Usage: Scripting & Automation
 Because this script uses `/dev/tty` for user interaction, it can be safely called from within other shell scripts without breaking the parent script's input stream. It also uses standard exit codes:
