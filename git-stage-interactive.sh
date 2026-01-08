@@ -87,7 +87,7 @@ $status_output
 EOF
 
 printf "Review session complete.\n"
-printf "----------------------------\n"
+printf "%s\n" "----------------------------"
 printf "Current Status:\n"
 git status
 exit 0
