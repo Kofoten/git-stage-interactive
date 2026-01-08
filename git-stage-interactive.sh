@@ -1,5 +1,7 @@
 #!/bin/sh
 
+exit_code=0
+
 if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
     printf "Error: Not a git repository.\n"
     exit 42
@@ -15,7 +17,7 @@ while IFS= read -r line; do
     file="${line#???}"
     status="${line% $file}"
 
-    case "$file" in 
+    case "$file" in
         *" -> "*)
             file="${file##* -> }"
             ;;
@@ -49,7 +51,7 @@ while IFS= read -r line; do
         printf "Action for %s? ([a]dd / [c]heckout (restore) / [s]kip / [q]uit): " "$file"
         read -r action < /dev/tty
         case "$action" in
-            [Aa]*) 
+            [Aa]*)
                 git add "$file"
                 printf "Staged.\n"
                 break
@@ -69,15 +71,16 @@ while IFS= read -r line; do
                     fi
                 fi
                 ;;
-            [Ss]*) 
+            [Ss]*)
                 printf "Skipped.\n"
                 break
                 ;;
             [Qq]*)
                 printf "Aborting review.\n"
-                exit 1
+                exit_code=1
+                break
                 ;;
-            *) 
+            *)
                 printf "Please enter 'a' to add, 'c' to checkout (restore), 's' to skip, or 'q' to quit.\n"
                 ;;
         esac
@@ -90,4 +93,4 @@ printf "Review session complete.\n"
 printf "%s\n" "----------------------------"
 printf "Current Status:\n"
 git status
-exit 0
+exit "$exit_code"
